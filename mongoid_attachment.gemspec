@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
   s.add_dependency('mongoid', '~> 1.2.14')
   s.add_dependency('mongo', '>= 1.0.1')
   s.add_dependency('bson_ext', '>= 1.0.1')
+  s.add_dependency('mime-types', '>= 1.16')
 
   s.add_development_dependency('rake', '>= 0.8.3')
   s.add_development_dependency('rspec', '>= 1.3.0')

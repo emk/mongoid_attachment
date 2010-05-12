@@ -9,24 +9,68 @@ end
 
 describe MongoidAttachment do
   describe "initialization" do
-    it "should open files specified by pathnames" do
-      path = fixture_path("example.txt")
-      email = Email.new(:attachment => Pathname.new(path))
-      email.attachment.read.should == "Example\n"
+    describe "by pathname" do
+      before do
+        path = fixture_path("example.txt")
+        @email = Email.new(:attachment => Pathname.new(path))
+      end
+
+      it "should store the specified file in the grid" do
+        @email.attachment.read.should == "Example\n"
+      end
+      
+      it "should record the filename" do
+        @email.attachment.filename.should == "example.txt"
+      end
+
+      it "should guess the content_type" do
+        @email.attachment.content_type.should == "text/plain"
+      end
     end
 
     it "should not allow pathnames to be passed as strings (for security)" do
       lambda do
         Email.new(:attachment => fixture_path("example.txt"))
-      end.should raise_error(/Must initialize attachments with Pathname or File objects/)
+      end.should raise_error(/Must initialize attachments with Pathname or IO objects/)
     end
 
-    it "should read IO objects directly into the grid" do
-      email = File.open(fixture_path("example.txt"), 'r') do |f|
-        Email.new(:attachment => f)
+    describe "using an IO object" do
+      before do
+        @email = File.open(fixture_path("example.txt"), 'r') do |f|
+          Email.new(:attachment => f)
+        end
       end
-      email.attachment.read.should == "Example\n"
+
+      it "should read the data directly into the grid" do
+        @email.attachment.read.should == "Example\n"
+      end
     end
 
-  end
+    describe "using an IO object with extra CGI-related fields" do
+      before do
+        @email = File.open(fixture_path("example.txt"), 'r') do |f|
+          # Create a fake CGI attachment the hard way.  The CGI module never
+          # exports the IO subclasses it creates; but instead builds them by
+          # hand like this each time.
+          (class << f; self; end).class_eval do
+            define_method(:original_filename) { "example.txt" }
+            define_method(:content_type) { "text/plain" }
+          end
+          Email.new(:attachment => f)
+        end
+      end
+
+      it "should read the data directly into the grid" do
+        @email.attachment.read.should == "Example\n"
+      end
+
+      it "should record original_filename as filename" do
+        @email.attachment.filename.should == "example.txt"
+      end
+     
+      it "should record content_type" do
+        @email.attachment.content_type.should == "text/plain"
+      end
+    end
+  end  
 end
