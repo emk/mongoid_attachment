@@ -1,2 +1,4 @@
-This gem provides simple GridFS file attachments for Mongoid.  Unlike many
-file attachment libraries, it uses existing GridFS metadata fields.
+WORK IN PROGRESS!  This doesn't do anything yet.
+
+This gem will provide simple GridFS file attachments for Mongoid.  Unlike
+many file attachment libraries, it uses existing GridFS metadata fields.
