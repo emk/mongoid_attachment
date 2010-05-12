@@ -1,0 +1,2 @@
+This gem provides simple GridFS file attachments for Mongoid.  Unlike many
+file attachment libraries, it uses existing GridFS metadata fields.
