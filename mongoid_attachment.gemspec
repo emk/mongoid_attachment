@@ -14,5 +14,6 @@ Gem::Specification.new do |s|
   s.add_dependency('mongo', '>= 1.0.1')
   s.add_dependency('bson_ext', '>= 1.0.1')
 
+  s.add_development_dependency('rake', '>= 0.8.3')
   s.add_development_dependency('rspec', '>= 1.3.0')
 end                    
