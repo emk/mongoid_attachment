@@ -9,11 +9,17 @@ module MongoidAttachment
       field id_field_getter_name, :type => Mongo::ObjectID
 
       define_method("#{name}=".to_sym) do |value|
+        # DO NOT ADD String HERE!  Strings can be generated from CGI
+        # parameters, allowing malicious POST requests to read arbitrary
+        # files from the file system.
         case value
-        when String
+        when Pathname
           obj_id = File.open(value, 'r') {|f| grid.put(f) }
         when IO
           obj_id = grid.put(value)
+        else
+          raise("Must initialize attachments with Pathname or File objects, " +
+                "not #{value.inspect}")
         end
         send(id_field_setter_name, obj_id)
       end
