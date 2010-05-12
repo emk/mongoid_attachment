@@ -44,6 +44,31 @@ describe MongoidAttachment do
       it "should read the data directly into the grid" do
         @email.attachment.read.should == "Example\n"
       end
+
+      it "should record the pathname if present" do
+        @email.attachment.filename.should == "example.txt"
+      end
+
+      it "should guess a MIME type if the pathname is present" do
+        @email.attachment.content_type.should == "text/plain"
+      end
+    end
+
+    describe "using an IO object with no path information" do
+      before do
+        @email = StringIO.open("In-memory string", 'r') do |f|
+          Email.new(:attachment => f)
+        end
+      end
+
+      it "should read the data directly into the grid" do
+        @email.attachment.read.should == "In-memory string"
+      end
+      
+      it "should have no filename and a generic content_type" do
+        @email.attachment.filename.should be_nil
+        @email.attachment.content_type.should == "binary/octet-stream"
+      end
     end
 
     describe "using an IO object with extra CGI-related fields" do

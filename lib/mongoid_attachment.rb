@@ -21,7 +21,7 @@ module MongoidAttachment
         File.open(path_or_io, 'r') do |f|
           grid.put(f, :filename => path_or_io.basename.to_s)
         end
-      when IO
+      when IO, StringIO
         have_cgi_metadata = [:original_filename, :content_type].all? do |method|
           path_or_io.respond_to?(method)
         end
@@ -29,6 +29,8 @@ module MongoidAttachment
           grid.put(path_or_io,
                    :filename => path_or_io.original_filename,
                    :content_type => path_or_io.content_type)
+        elsif path_or_io.respond_to?(:path) && !path_or_io.path.nil?
+          grid.put(path_or_io, :filename => File.basename(path_or_io.path))
         else
           grid.put(path_or_io)
         end
