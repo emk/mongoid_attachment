@@ -8,8 +8,17 @@ class Email
 end
 
 describe MongoidAttachment do
-  it "should be initializable using a path" do
-    email = Email.new(:attachment => fixture_path("example.txt"))
-    email.attachment.read.should == "Example\n"
+  describe "initialization" do
+    it "should treat strings as paths to files" do
+      email = Email.new(:attachment => fixture_path("example.txt"))
+      email.attachment.read.should == "Example\n"
+    end
+
+    it "should read open files directly into the grid" do
+      email = File.open(fixture_path("example.txt"), 'r') do |f|
+        Email.new(:attachment => f)
+      end
+      email.attachment.read.should == "Example\n"
+    end
   end
 end
