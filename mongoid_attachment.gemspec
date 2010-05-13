@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.summary = "Lightweight file attachments for Mongoid"
   s.require_path = "lib"
 
-  s.add_dependency('mongoid', '~> 1.2.14')
+  s.add_dependency('mongoid', '>= 1.2.14', '< 2.0')
   s.add_dependency('mongo', '>= 1.0.1')
   s.add_dependency('bson_ext', '>= 1.0.1')
   s.add_dependency('mime-types', '>= 1.16')
