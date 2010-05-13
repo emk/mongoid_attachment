@@ -8,7 +8,7 @@ module MongoidAttachment
     end
     
     # Put a file (specified using a Pathname or IO object) onto the grid
-    # and return a Mongo::ObjectID.
+    # and return a BSON::ObjectID.
     #
     # For security reasons, you can't pass a pathname as a string, but must
     # always use an explicit Pathname.  This makes it more difficult for a
@@ -46,7 +46,7 @@ module MongoidAttachment
       id_field_getter_name = "#{name}_id".to_sym
       id_field_setter_name = "#{id_field_getter_name}=".to_sym
 
-      field id_field_getter_name, :type => Mongo::ObjectID
+      field id_field_getter_name, :type => BSON::ObjectID
 
       define_method("#{name}=".to_sym) do |value|
         obj_id = self.class.put_on_grid(value)
