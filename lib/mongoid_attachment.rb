@@ -16,12 +16,11 @@ module MongoidAttachment
     # file input, and thereby trick the server into reading a file off the
     # server's own filesystem and storing it on the grid.
     def put_on_grid(path_or_io)
-      case path_or_io
-      when Pathname
+      if path_or_io.instance_of?(Pathname)
         File.open(path_or_io, 'r') do |f|
           grid.put(f, :filename => path_or_io.basename.to_s)
         end
-      when IO, StringIO
+      elsif [:eof?, :close].all? {|m| path_or_io.respond_to?(m) }
         have_cgi_metadata = [:original_filename, :content_type].all? do |method|
           path_or_io.respond_to?(method)
         end
