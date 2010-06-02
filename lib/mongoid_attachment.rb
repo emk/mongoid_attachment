@@ -56,6 +56,16 @@ module MongoidAttachment
         id = send(id_field_getter_name)
         id.nil? ? nil : self.class.grid.get(id)
       end
+
+      define_method("destroy_#{name}") do
+        id = send(id_field_getter_name)
+        unless id.nil?
+          self.class.grid.delete(id)
+          send(id_field_setter_name, nil)
+        end
+      end
+      private "destroy_#{name}"
+      before_destroy("destroy_#{name}")
     end
   end
 
