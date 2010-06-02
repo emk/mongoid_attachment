@@ -129,6 +129,5 @@ describe MongoidAttachment do
 
   # it should not recreate the grid object on each access
   # it should survive reloading objects
-  # it should delete the attached file when the object is deleted
   # it should offer some kind content transformation API (for encryption, etc.)
 end
