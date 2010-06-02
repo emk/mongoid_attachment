@@ -108,12 +108,24 @@ describe MongoidAttachment do
     email = Email.create!(:attachment => Pathname.new(path))
     attachment_id = email.attachment_id
     email.destroy
-    lambda do
-      Email.grid.get(attachment_id).should be_nil
-    end.should raise_error(/Could not open file matching/)
+    attachment_id.should have_been_removed_from_grid
   end
 
-  # it should delete the old attachment when a new attachment is assigned
+  it "should delete the old attachment when nil is assigned" do
+    path = fixture_path("example.txt")
+    email = Email.create!(:attachment => Pathname.new(path))
+    old_attachment_id = email.attachment_id
+    email.attachment = nil
+    old_attachment_id.should have_been_removed_from_grid
+  end
+
+  it "should delete the old attachment when a new attachment is assigned" do
+    path = fixture_path("example.txt")
+    email = Email.create!(:attachment => Pathname.new(path))
+    old_attachment_id = email.attachment_id
+    email.attachment = Pathname.new(fixture_path("example2.txt"))
+    old_attachment_id.should have_been_removed_from_grid
+  end
 
   # it should not recreate the grid object on each access
   # it should survive reloading objects

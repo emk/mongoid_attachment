@@ -48,8 +48,20 @@ module MongoidAttachment
       field id_field_getter_name, :type => BSON::ObjectID
 
       define_method("#{name}=".to_sym) do |value|
-        obj_id = self.class.put_on_grid(value)
-        send(id_field_setter_name, obj_id)
+        # Remove any existing file from the grid.
+        old_id = send(id_field_getter_name)
+        unless old_id.nil?
+          self.class.grid.delete(old_id)
+        end
+
+        # Store the new file on the grid, or set our ID to nil if we have
+        # no file.
+        if value.nil?
+          send(id_field_setter_name, nil)
+        else
+          id = self.class.put_on_grid(value)
+          send(id_field_setter_name, id)
+        end
       end
 
       define_method(name) do
@@ -58,11 +70,7 @@ module MongoidAttachment
       end
 
       define_method("destroy_#{name}") do
-        id = send(id_field_getter_name)
-        unless id.nil?
-          self.class.grid.delete(id)
-          send(id_field_setter_name, nil)
-        end
+        send("#{name}=", nil)
       end
       private "destroy_#{name}"
       before_destroy("destroy_#{name}")
