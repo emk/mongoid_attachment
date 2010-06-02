@@ -99,6 +99,10 @@ describe MongoidAttachment do
     end
   end  
 
+  it "should return nil if no attachment is present" do
+    Email.new.attachment.should be_nil
+  end
+
   # it should not recreate the grid object on each access
   # it should survive reloading objects
   # it should delete the attached file when the object is deleted

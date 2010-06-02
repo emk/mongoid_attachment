@@ -53,7 +53,8 @@ module MongoidAttachment
       end
 
       define_method(name) do
-        self.class.grid.get(send(id_field_getter_name))
+        id = send(id_field_getter_name)
+        id.nil? ? nil : self.class.grid.get(id)
       end
     end
   end
