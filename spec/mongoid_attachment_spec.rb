@@ -157,7 +157,30 @@ describe MongoidAttachment do
     old_attachment_id.should have_been_removed_from_grid
   end
 
-  # it should not recreate the grid object on each access
-  # it should survive reloading objects
+  context "memoization" do
+    it "should reuse the same GridIO object for multiple accesses" do
+      path = fixture_path("example.txt")
+      email = Email.create!(:attachment => Pathname.new(path))
+      email.attachment.should === email.attachment
+    end
+
+    it "should unmemoize the GridIO object during assignment" do
+      path = fixture_path("example.txt")
+      email = Email.create!(:attachment => Pathname.new(path))
+      old = email.attachment
+      email.attachment = Pathname.new(fixture_path("example2.txt"))
+      email.attachment.should_not === old
+    end
+
+    it "should unmemoize during reload, but keep the object" do
+      path = fixture_path("example.txt")
+      email = Email.create!(:attachment => Pathname.new(path))
+      old = email.attachment
+      email.reload
+      email.attachment.should_not === old
+      email.attachment.filename.should == "example.txt"
+    end
+  end
+
   # it should offer some kind content transformation API (for encryption, etc.)
 end

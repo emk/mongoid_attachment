@@ -1,6 +1,11 @@
 require 'mongoid'
 
 module MongoidAttachment
+  # Return the macro used to create this pseudo-association.
+  def self.macro
+    :has_attachment
+  end
+
   module ClassMethods
     # Return the Mongo::Grid object associated with this class.
     def grid
@@ -48,6 +53,8 @@ module MongoidAttachment
       field id_field_getter_name, :type => BSON::ObjectID
 
       define_method("#{name}=".to_sym) do |value|
+        unmemoize(name)
+
         # Remove any existing file from the grid.
         old_id = send(id_field_getter_name)
         unless old_id.nil?
@@ -65,8 +72,10 @@ module MongoidAttachment
       end
 
       define_method(name) do
-        id = send(id_field_getter_name)
-        id.nil? ? nil : self.class.grid.get(id)
+        memoized(name) do
+          id = send(id_field_getter_name)
+          id.nil? ? nil : self.class.grid.get(id)
+        end
       end
 
       define_method("destroy_#{name}") do
@@ -74,6 +83,12 @@ module MongoidAttachment
       end
       private "destroy_#{name}"
       before_destroy("destroy_#{name}")
+
+      opts = Mongoid::Associations::Options.new(:name => name,
+                                                :foreign_key =>
+                                                  id_field_getter_name)
+      associations[name] =
+        Mongoid::Associations::MetaData.new(MongoidAttachment, opts)
     end
   end
 
