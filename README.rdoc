@@ -2,3 +2,18 @@ WORK IN PROGRESS!  This doesn't do anything yet.
 
 This gem will provide simple GridFS file attachments for Mongoid.  Unlike
 many file attachment libraries, it uses existing GridFS metadata fields.
+
+== Destroying grid attachments
+
+This library has limited support for destroying grid attachments, provided
+you follow some rules:
+
+1. When removing embedded documents from an EmbedsMany association, you
+   _must_ use 'destroy_all', or manually destroy the removed documents.
+2. You must include MongoidAttachment in _all_ classes that might
+   resursively contain an attachment somewhere in an embedded document.
+
+If you follow these rules, you'll probably be OK.  But also keep an eye on
+cleaning up after errors in document construction--this library currently
+creates the attachment in the database immediately, even if the containing
+document hasn't been saved yet.

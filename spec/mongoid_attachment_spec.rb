@@ -9,6 +9,7 @@ end
 
 class Album
   include Mongoid::Document
+  include MongoidAttachment
   embeds_many :pictures, :dependent => :destroy
 end
 
@@ -115,7 +116,7 @@ describe MongoidAttachment do
     Email.new.attachment.should be_nil
   end
 
-  it "should delete the attachment when the document is deleted" do
+  it "should destroy the attachment when the document is deleted" do
     path = fixture_path("example.txt")
     email = Email.create!(:attachment => Pathname.new(path))
     attachment_id = email.attachment_id
@@ -123,24 +124,24 @@ describe MongoidAttachment do
     attachment_id.should have_been_removed_from_grid
   end
 
-  # Disabled, because Mongoid before_destroy callbacks don't propagate
-  # down from the root document to each subdocument.
-  #it "should delete the attachment when a nested document is deleted" do
-  #  pic1 = Picture.new(:image => Pathname.new(fixture_path("example.txt")))
-  #  album = Album.create!(:pictures => [pic1])
-  #
-  #  image1_id = pic1.image_id
-  #  pic2 = Picture.new(:image => Pathname.new(fixture_path("example2.txt")))
-  #  album.pictures = [pic2]
-  #  album.save!
-  #  pic1.destroy # This works.
-  #  image1_id.should have_been_removed_from_grid
-  #
-  #  image2_id = pic2.image_id
-  #  album.destroy # This doesn't, yet.
-  #  image2_id.should have_been_removed_from_grid
-  #end
+  it "should destroy the attachment when a nested document is destroyed" do
+    pic = Picture.new(:image => Pathname.new(fixture_path("example.txt")))
+    album = Album.create!(:pictures => [pic])
+  
+    image_id = pic.image_id
+    album.pictures.destroy_all
+    image_id.should have_been_removed_from_grid
+  end
 
+  it "should destroy nested attachments when a document is destroyed" do
+    pic = Picture.new(:image => Pathname.new(fixture_path("example.txt")))
+    album = Album.create!(:pictures => [pic])
+
+    image_id = pic.image_id
+    album.destroy
+    image_id.should have_been_removed_from_grid
+  end
+  
   it "should delete the old attachment when nil is assigned" do
     path = fixture_path("example.txt")
     email = Email.create!(:attachment => Pathname.new(path))

@@ -78,12 +78,8 @@ module MongoidAttachment
         end
       end
 
-      define_method("destroy_#{name}") do
-        send("#{name}=", nil)
-      end
-      private "destroy_#{name}"
-      before_destroy("destroy_#{name}")
-
+      # This makes sure we get unmemoized on reloads, and helps us with
+      # recursive destroy.
       opts = Mongoid::Associations::Options.new(:name => name,
                                                 :foreign_key =>
                                                   id_field_getter_name)
@@ -92,8 +88,31 @@ module MongoidAttachment
     end
   end
 
+  module InstanceMethods
+    # Recursively walk down through embedded documents, destroying
+    # any attachments we find.
+    def destroy_all_attachments
+      associations.each do |name, metadata|
+        association = metadata.association
+        if ::MongoidAttachment == association
+          send("#{name}=", nil)
+        elsif ::Mongoid::Associations::EmbedsOne == association
+          send(name).destroy_all_attachments
+        elsif ::Mongoid::Associations::EmbedsMany == association
+          send(name).each {|d| d.destroy_all_attachments }
+        end
+      end
+    end    
+  end
+
   # :nodoc: Called when MongoidAttachment is included by a class.
   def self.included(base)
     base.extend(ClassMethods)
+    base.send(:include, InstanceMethods)
+
+    # KLUDGE - Handle non-recursive before_destroy with brute force.  Note
+    # that this may cause unnecessary recursion if before_destroy ever gets
+    # fixed to work correctly.
+    base.before_destroy :destroy_all_attachments
   end
 end
